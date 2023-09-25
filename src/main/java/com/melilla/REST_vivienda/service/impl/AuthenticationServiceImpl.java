@@ -4,6 +4,7 @@ package com.melilla.REST_vivienda.service.impl;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 
@@ -42,6 +43,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 		var jwt = jwtService.generateToken(user);
 		
 		return JwtResponseDTO.builder()
+				.estado(HttpStatus.OK)
 				.userName(user.getUsername())
 				.roles(user.getAuthorities().stream().collect(Collectors.toList()))
 				.token(jwt)
