@@ -1,5 +1,7 @@
 package com.melilla.REST_vivienda.security;
 
+
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,6 +19,9 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
 import com.melilla.REST_vivienda.JWT.JwtAuthenticationFilter;
 import com.melilla.REST_vivienda.service.UserService;
 
@@ -31,19 +36,26 @@ public class SecurityConfig {
 
 	@Bean
 	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-		http.csrf(AbstractHttpConfigurer::disable)
-				.authorizeHttpRequests(
-						request -> request
-							.requestMatchers("/vivienda/login").permitAll()
-							.requestMatchers("/swagger-ui/**").permitAll()
-							.requestMatchers("/v3/**").permitAll()
-							
-							.anyRequest().authenticated())
-				.logout((logout) -> logout.logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler()))
-				
-				.sessionManagement(manager -> manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-				.authenticationProvider(authenticationProvider())
-				.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+        http.csrf(AbstractHttpConfigurer::disable)
+        
+                .authorizeHttpRequests(
+                        request -> request
+                                .requestMatchers("/login").permitAll()
+                                .requestMatchers("/swagger-ui/**").permitAll()
+                                .requestMatchers("/v3/**").permitAll()
+
+                                .anyRequest().authenticated())
+                .logout((logout) -> logout.logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler()))
+
+                .sessionManagement(manager -> manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authenticationProvider(authenticationProvider())
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .exceptionHandling(handling -> {
+                	handling.authenticationEntryPoint(new RestAuthenticationEntryPoint());
+                	handling.accessDeniedHandler(new CustomAccessDeniedHandler());
+                });
+        http.cors();
+        	
 		return http.build();
 	}
 
@@ -63,5 +75,17 @@ public class SecurityConfig {
 	@Bean
 	public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
 		return config.getAuthenticationManager();
+	}
+	
+	@Bean
+	public WebMvcConfigurer corsConfigurer() {
+		return new WebMvcConfigurer() {
+
+			@Override
+			public void addCorsMappings(CorsRegistry registry) {
+				registry.addMapping("/**").allowedOrigins("http://localhost:5173","http://127.0.0.1:5173","http://localhost");
+			}
+			
+		};
 	}
 }

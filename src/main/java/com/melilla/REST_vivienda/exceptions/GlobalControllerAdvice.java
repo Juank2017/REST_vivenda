@@ -5,12 +5,18 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
-@RestControllerAdvice
+import com.melilla.REST_vivienda.exceptions.exceptions.ExpedienteNotFoundException;
+
+import io.jsonwebtoken.ExpiredJwtException;
+
+
+@ControllerAdvice
 public class GlobalControllerAdvice extends ResponseEntityExceptionHandler {
 
 	
@@ -19,14 +25,19 @@ public class GlobalControllerAdvice extends ResponseEntityExceptionHandler {
 		ApiError apiError = new ApiError(status, ex.getMessage());
 		return ResponseEntity.status(status).headers(headers).body(apiError);
 	}
-
+    @ExceptionHandler({ AccessDeniedException.class })
+    public ResponseEntity<Object> handleAccessDeniedException(
+      Exception ex, WebRequest request) {
+        return new ResponseEntity<Object>(
+          "Access denied message here", new HttpHeaders(), HttpStatus.FORBIDDEN);
+    }
 //	@ExceptionHandler({  })
 //	public ResponseEntity<ApiError> handleEntityCreateError(Exception e) {
 //		ApiError apiError = new ApiError(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
 //		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(apiError);
 //	}
 
-	@ExceptionHandler(AccessDeniedException.class)
+	@ExceptionHandler({io.jsonwebtoken.security.SignatureException.class})
 	public ResponseEntity<ApiError> handleForbiden(Exception e) {
 		ApiError apiError = new ApiError(HttpStatus.FORBIDDEN, e.getMessage());
 		return ResponseEntity.status(HttpStatus.FORBIDDEN).body(apiError);
@@ -38,10 +49,18 @@ public class GlobalControllerAdvice extends ResponseEntityExceptionHandler {
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(apiError);
 
 	}
+	
+	@ExceptionHandler({ExpiredJwtException.class  })
+	public ResponseEntity<ApiError> handleExpiredJwt(Exception ex) {
+		ApiError apiError = new ApiError(HttpStatus.FORBIDDEN, ex.getMessage());
+		return ResponseEntity.status(HttpStatus.FORBIDDEN).body(apiError);
 
-//	@ExceptionHandler({  })
-//	public ResponseEntity<ApiError> handleNoEncontrado(Exception ex) {
-//		ApiError apiError = new ApiError(HttpStatus.NOT_FOUND, ex.getMessage());
-//		return ResponseEntity.status(HttpStatus.NOT_FOUND).body(apiError);
-//	}
+	}
+	
+
+	@ExceptionHandler({ ExpedienteNotFoundException.class })
+	public ResponseEntity<ApiError> handleNoEncontrado(Exception ex) {
+		ApiError apiError = new ApiError(HttpStatus.NOT_FOUND, ex.getMessage());
+		return ResponseEntity.status(HttpStatus.NOT_FOUND).body(apiError);
+	}
 }

@@ -5,6 +5,8 @@ import java.util.Collection;
 
 import java.util.List;
 
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -16,7 +18,7 @@ import jakarta.persistence.Basic;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -61,7 +63,7 @@ public class User implements UserDetails {
 	Boolean enabled;
 	
 	
-	@ManyToMany
+	@ManyToMany(fetch = FetchType.EAGER)
 	@JoinTable(name="Usuario_Rol",
 				joinColumns = @JoinColumn(name="idUsuario", referencedColumnName = "id"),
 				inverseJoinColumns = @JoinColumn(name="idRol", referencedColumnName = "id"))

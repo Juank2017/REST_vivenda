@@ -20,15 +20,18 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.java.Log;
+import lombok.extern.log4j.Log4j;
 
 @Component
 @RequiredArgsConstructor
+@Log
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
 	
 		@Autowired
 	    private final JWTService jwtService;
-	  
+	    @Autowired
 	    private final UserService userService;
 	  
 
@@ -42,18 +45,22 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
             return;
         }
+        log.info(authHeader);
         jwt = authHeader.substring(7);
         userEmail = jwtService.extractUserName(jwt);
+        log.info(userEmail);
         if (StringUtils.isNotEmpty(userEmail)
                 && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = userService.userDetailsService()
                     .loadUserByUsername(userEmail);
             if (jwtService.isTokenValid(jwt, userDetails)) {
+            	log.info("Token válido");
                 SecurityContext context = SecurityContextHolder.createEmptyContext();
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.getAuthorities());
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 context.setAuthentication(authToken);
+                log.info(context.getAuthentication().getName());
                 SecurityContextHolder.setContext(context);
             }
         }

@@ -18,7 +18,6 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor	
-@RequestMapping("/vivienda")
 public class AuthenticationController {
 
 	
