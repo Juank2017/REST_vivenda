@@ -12,6 +12,7 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import com.melilla.REST_vivienda.exceptions.exceptions.ExpedienteNotFoundException;
+import com.melilla.REST_vivienda.exceptions.exceptions.TokenRefreshException;
 
 import io.jsonwebtoken.ExpiredJwtException;
 
@@ -56,7 +57,11 @@ public class GlobalControllerAdvice extends ResponseEntityExceptionHandler {
 		return ResponseEntity.status(HttpStatus.FORBIDDEN).body(apiError);
 
 	}
-	
+	@ExceptionHandler({ TokenRefreshException.class })
+	public ResponseEntity<ApiError> handleTokenRefresh(Exception ex) {
+		ApiError apiError = new ApiError(HttpStatus.FORBIDDEN, ex.getMessage());
+		return ResponseEntity.status(HttpStatus.FORBIDDEN).body(apiError);
+	}
 
 	@ExceptionHandler({ ExpedienteNotFoundException.class })
 	public ResponseEntity<ApiError> handleNoEncontrado(Exception ex) {

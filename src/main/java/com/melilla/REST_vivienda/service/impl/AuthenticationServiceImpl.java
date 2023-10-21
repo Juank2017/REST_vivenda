@@ -7,13 +7,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import com.melilla.REST_vivienda.DTO.JwtResponseDTO;
+import com.melilla.REST_vivienda.model.RefreshToken;
 import com.melilla.REST_vivienda.repository.UserRepository;
 import com.melilla.REST_vivienda.service.AuthenticationService;
 import com.melilla.REST_vivienda.service.JWTService;
+import com.melilla.REST_vivienda.service.RefreshTokenService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.java.Log;
@@ -28,6 +30,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 	private UserRepository userRepository;
 	@Autowired
 	private AuthenticationManager authenticacionManager;
+	
+	  @Autowired
+	  RefreshTokenService refreshTokenService;
 
 	@Autowired
 	private JWTService jwtService;
@@ -41,12 +46,14 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 		log.info(user.getUsername());
 		log.info(user.getAuthorities().toString());
 		var jwt = jwtService.generateToken(user);
+		RefreshToken refreshToken = refreshTokenService.createRefreshToken(user.getId());
 		
 		return JwtResponseDTO.builder()
 				.estado(HttpStatus.OK)
 				.userName(user.getUsername())
 				.roles(user.getAuthorities().stream().collect(Collectors.toList()))
 				.token(jwt)
+				.refreshToken(refreshToken.getToken())
 				.build();
 	}
 

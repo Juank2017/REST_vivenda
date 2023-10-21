@@ -17,4 +17,5 @@ public class JwtResponseDTO {
 	private String userName;
 	private List<GrantedAuthority> roles;
 	private String token;
+	private String refreshToken;
 }

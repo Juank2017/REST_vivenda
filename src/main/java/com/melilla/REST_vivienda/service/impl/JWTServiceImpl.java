@@ -22,6 +22,8 @@ import io.jsonwebtoken.security.Keys;
 public class JWTServiceImpl implements JWTService {
 	 @Value("${token.signing.key}")
 	    private String jwtSigningKey;
+	  @Value("${app.jwtExpirationMs}")
+	  private int jwtExpirationMs;
 	    @Override
 	    public String extractUserName(String token) {
 	        return extractClaim(token, Claims::getSubject);
@@ -31,6 +33,12 @@ public class JWTServiceImpl implements JWTService {
 	    public String generateToken(UserDetails userDetails) {
 	        return generateToken(new HashMap<>(), userDetails);
 	    }
+	    
+	    public String generateTokenFromUsername(String username) {
+	        return Jwts.builder().setSubject(username).setIssuedAt(new Date())
+	            .setExpiration(new Date((new Date()).getTime() + jwtExpirationMs)).signWith(SignatureAlgorithm.HS512, jwtSigningKey)
+	            .compact();
+	      }
 
 	    @Override
 	    public boolean isTokenValid(String token, UserDetails userDetails) {
@@ -47,7 +55,7 @@ public class JWTServiceImpl implements JWTService {
 	        return Jwts.builder().setClaims(extraClaims).setSubject(userDetails.getUsername())
 	                .setIssuedAt(new Date(System.currentTimeMillis()))
 	                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 24))
-	                .signWith(getSigningKey(), SignatureAlgorithm.HS256).compact();
+	                .signWith(getSigningKey(), SignatureAlgorithm.HS512).compact();
 	    }
 
 	    private boolean isTokenExpired(String token) {
